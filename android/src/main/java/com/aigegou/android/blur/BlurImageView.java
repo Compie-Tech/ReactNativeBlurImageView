@@ -30,14 +30,14 @@ public class BlurImageView extends ImageView {
         super(context);
         this.context = context;
         thisImg = this;
-        this.setScaleType(ScaleType.FIT_XY);
+        this.setScaleType(ScaleType.CENTER_CROP);
     }
 
     public BlurImageView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
         this.context = context;
         thisImg = this;
-        this.setScaleType(ScaleType.FIT_XY);
+        this.setScaleType(ScaleType.CENTER_CROP);
     }
 
     public void setImageUrlAndUpdate(String imageUrl) {
@@ -124,7 +124,7 @@ public class BlurImageView extends ImageView {
         Bitmap bitmapBlur = null;
 
         if (bitmap != null) {
-            bitmapBlur = FastBlur.of(context, bitmap, null);
+            bitmapBlur = FastBlur.of(context, bitmap, null, this.radius, this.sampling);
         }
 
         return bitmapBlur;

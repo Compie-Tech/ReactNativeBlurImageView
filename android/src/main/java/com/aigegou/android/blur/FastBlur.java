@@ -88,6 +88,52 @@ public class FastBlur {
         }
     }
 
+    public static Bitmap of(Context context, Bitmap source, BlurFactor factor, int radius, int sampling) {
+            if (factor == null) {
+                factor = new BlurFactor();
+                factor.width = source.getWidth();
+                factor.height = source.getHeight();
+                factor.radius = radius;
+                factor.sampling = sampling;
+            }
+            int width = factor.width / factor.sampling;
+            int height = factor.height / factor.sampling;
+
+            if (width == 0 || height == 0) {
+                return null;
+            }
+
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+            Canvas canvas = new Canvas(bitmap);
+            canvas.scale(1 / (float) factor.sampling, 1 / (float) factor.sampling);
+            Paint paint = new Paint();
+            paint.setFlags(Paint.FILTER_BITMAP_FLAG | Paint.ANTI_ALIAS_FLAG);
+            PorterDuffColorFilter filter =
+                            new PorterDuffColorFilter(factor.color, PorterDuff.Mode.SRC_ATOP);
+            paint.setColorFilter(filter);
+            canvas.drawBitmap(source, 0, 0, paint);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                try {
+                    bitmap = rs(context, bitmap, factor.radius);
+                } catch (RSRuntimeException e) {
+                    bitmap = stack(bitmap, factor.radius, true);
+                }
+            } else {
+                bitmap = stack(bitmap, factor.radius, true);
+            }
+
+            if (factor.sampling == BlurFactor.DEFAULT_SAMPLING) {
+                return bitmap;
+            } else {
+                Bitmap scaled = Bitmap.createScaledBitmap(bitmap, factor.width, factor.height, true);
+                bitmap.recycle();
+                return scaled;
+            }
+        }
+
+
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static Bitmap rs(Context context, Bitmap bitmap, int radius) throws RSRuntimeException {
         RenderScript rs = null;
@@ -346,4 +392,6 @@ public class FastBlur {
 
         return (bitmap);
     }
+
+
 }
